@@ -1,0 +1,906 @@
+{
+  "name": "Brainiac — Briefing Matinal v3",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "cronExpression",
+              "expression": "0 0 8 * * *"
+            }
+          ]
+        }
+      },
+      "id": "10443e33-e58c-49ef-809f-692e79c67f7e",
+      "name": "Trigger 08h",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        -4416,
+        48
+      ],
+      "notesInFlow": true,
+      "notes": "Diário às 08h no fuso do workflow. Publicar/ativar após teste. O export atual estava ativo; a ausência do disparo precisa ser verificada em Executions."
+    },
+    {
+      "parameters": {
+        "operation": "getAll",
+        "calendar": {
+          "__rl": true,
+          "value": "primary",
+          "mode": "id"
+        },
+        "returnAll": true,
+        "timeMin": "={{ $json.startDay }}",
+        "timeMax": "={{ $json.endWindow }}",
+        "options": {
+          "orderBy": "startTime"
+        }
+      },
+      "id": "b32f78b4-e4b4-42f2-a1aa-cc3830e1344a",
+      "name": "Google Calendar - Semana",
+      "type": "n8n-nodes-base.googleCalendar",
+      "typeVersion": 1.3,
+      "position": [
+        -3408,
+        -688
+      ],
+      "alwaysOutputData": true,
+      "retryOnFail": true,
+      "maxTries": 2,
+      "waitBetweenTries": 1500,
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "url": "https://api.coingecko.com/api/v3/simple/price",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "ids",
+              "value": "bitcoin,solana,ripple,usd-coin"
+            },
+            {
+              "name": "vs_currencies",
+              "value": "brl,usd"
+            },
+            {
+              "name": "include_last_updated_at",
+              "value": "true"
+            }
+          ]
+        },
+        "options": {
+          "timeout": 15000
+        }
+      },
+      "id": "e1d08ab1-f130-485e-8519-6fa5ff50dd02",
+      "name": "CoinGecko - Cotações",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -3408,
+        -496
+      ],
+      "alwaysOutputData": true,
+      "retryOnFail": true,
+      "maxTries": 2,
+      "waitBetweenTries": 1500,
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "url": "https://api.open-meteo.com/v1/forecast",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "latitude",
+              "value": "-22.9056"
+            },
+            {
+              "name": "longitude",
+              "value": "-47.0608"
+            },
+            {
+              "name": "current",
+              "value": "temperature_2m,relative_humidity_2m,apparent_temperature,weather_code"
+            },
+            {
+              "name": "daily",
+              "value": "temperature_2m_max,temperature_2m_min,precipitation_probability_max"
+            },
+            {
+              "name": "timezone",
+              "value": "={{ $json.timezone }}"
+            },
+            {
+              "name": "forecast_days",
+              "value": "2"
+            }
+          ]
+        },
+        "options": {
+          "timeout": 20000
+        }
+      },
+      "id": "061bf5e0-2997-427e-b4b9-8d9ea219e127",
+      "name": "Clima - Campinas",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -3408,
+        -320
+      ],
+      "alwaysOutputData": true,
+      "retryOnFail": true,
+      "maxTries": 2,
+      "waitBetweenTries": 1500,
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "url": "https://agenciabrasil.ebc.com.br/rss/ultimasnoticias/feed.xml",
+        "options": {}
+      },
+      "id": "607b7bb6-349d-4399-99e8-5e8c84905dd3",
+      "name": "Notícias - Agência Brasil",
+      "type": "n8n-nodes-base.rssFeedRead",
+      "typeVersion": 1.1,
+      "position": [
+        -3408,
+        -144
+      ],
+      "alwaysOutputData": true,
+      "retryOnFail": true,
+      "maxTries": 2,
+      "waitBetweenTries": 1500,
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "CONFIGURAR_PLANILHA_ID",
+          "mode": "id"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "objetivos",
+          "mode": "name"
+        },
+        "options": {}
+      },
+      "id": "27ab7c58-0bc1-454e-a6fb-4d1e6b95faa8",
+      "name": "Sheets - Objetivos Ativos",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
+      "position": [
+        -3408,
+        48
+      ],
+      "alwaysOutputData": true,
+      "retryOnFail": true,
+      "maxTries": 2,
+      "waitBetweenTries": 1500,
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "operation": "getAll",
+        "task": "={{ $json.listIds.rotina }}",
+        "returnAll": true,
+        "additionalFields": {
+          "showCompleted": false,
+          "showHidden": false
+        }
+      },
+      "id": "31a25608-9cc6-474c-9c99-7c7132957b48",
+      "name": "Tasks - Minha Rotina",
+      "type": "n8n-nodes-base.googleTasks",
+      "typeVersion": 1,
+      "position": [
+        -3408,
+        224
+      ],
+      "alwaysOutputData": true,
+      "retryOnFail": true,
+      "maxTries": 2,
+      "waitBetweenTries": 1500,
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "operation": "getAll",
+        "task": "={{ $json.listIds.hackathon }}",
+        "returnAll": true,
+        "additionalFields": {
+          "showCompleted": false,
+          "showHidden": false
+        }
+      },
+      "id": "b55fbade-0811-4241-a803-111dd21c8149",
+      "name": "Tasks - Hackathon GH",
+      "type": "n8n-nodes-base.googleTasks",
+      "typeVersion": 1,
+      "position": [
+        -3408,
+        400
+      ],
+      "alwaysOutputData": true,
+      "retryOnFail": true,
+      "maxTries": 2,
+      "waitBetweenTries": 1500,
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "operation": "getAll",
+        "task": "={{ $json.listIds.eracing }}",
+        "returnAll": true,
+        "additionalFields": {
+          "showCompleted": false,
+          "showHidden": false
+        }
+      },
+      "id": "40786247-4140-4953-a738-115ea27dffa1",
+      "name": "Tasks - E-Racing",
+      "type": "n8n-nodes-base.googleTasks",
+      "typeVersion": 1,
+      "position": [
+        -3408,
+        592
+      ],
+      "alwaysOutputData": true,
+      "retryOnFail": true,
+      "maxTries": 2,
+      "waitBetweenTries": 1500,
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "operation": "getAll",
+        "task": "={{ $json.listIds.profissional }}",
+        "returnAll": true,
+        "additionalFields": {
+          "showCompleted": false,
+          "showHidden": false
+        }
+      },
+      "id": "e02ed081-d252-4e13-85a9-ca5081dc9ac1",
+      "name": "Tasks - Profissional",
+      "type": "n8n-nodes-base.googleTasks",
+      "typeVersion": 1,
+      "position": [
+        -3408,
+        768
+      ],
+      "alwaysOutputData": true,
+      "retryOnFail": true,
+      "maxTries": 2,
+      "waitBetweenTries": 1500,
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "numberInputs": 10
+      },
+      "id": "a2e16c4e-8209-4944-8f51-b7c57ae5c60b",
+      "name": "Merge",
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3,
+      "position": [
+        -2912,
+        48
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const envelopes = $input.all().map(i=>i.json);\nconst cfg = envelopes.find(x=>x.source==='_contexto')?.data?.[0];\nif(!cfg?.today || !cfg.nextWeekStart || !cfg.endWindowDate) throw new Error('Falta contexto: execute o workflow inteiro pelo Teste manual, incluindo Resolver Listas e Merge.');\nconst TZ=cfg.timezone, today=cfg.today, now=new Date(cfg.nowIso);\nconst warnings=[...(cfg.listWarnings||[])];\nconst clean=(v,max=250)=>String(v??'').replace(/[\\r\\n\\t]+/g,' ').trim().slice(0,max);\nconst norm=v=>clean(v).normalize('NFD').replace(/[\\u0300-\\u036f]/g,'').toLowerCase();\nconst dateKey=v=>new Intl.DateTimeFormat('en-CA',{timeZone:TZ,year:'numeric',month:'2-digit',day:'2-digit'}).format(new Date(v));\nconst clock=v=>new Date(v).toLocaleTimeString('pt-BR',{timeZone:TZ,hour:'2-digit',minute:'2-digit'});\nconst shortDate=v=>{ const d=String(v||'').slice(0,10);return /^\\d{4}-\\d{2}-\\d{2}$/.test(d)?d.slice(8,10)+'/'+d.slice(5,7):'data inválida'; };\nconst sourceStatus={};\nconst expectedSources=['Google Calendar - Semana','Tasks - Minha Rotina','Tasks - Hackathon GH','Tasks - E-Racing','Tasks - Profissional','Sheets - Objetivos Ativos','Clima - Campinas','CoinGecko - Cotações','Notícias - Agência Brasil'];\nfor(const name of expectedSources){\n const hits=envelopes.filter(x=>x.source===name);\n if(hits.length!==1 || !Array.isArray(hits[0].data)) throw new Error('Fluxo incompleto: falta uma saída única de '+name+'. Execute o workflow inteiro pelo Teste manual.');\n}\nfunction rows(name) {\n const all=envelopes.find(x=>x.source===name).data.map(x=>x||{});\n const isError=x=>x.error || x.status==='error' || Number(x.statusCode)>=400 || Number(x.status)>=400 || (x.cod && !['200',200].includes(x.cod)) || x.status?.error_code;\n const bad=all.find(isError);\n if(bad){\n  const raw=JSON.stringify(bad);\n  let message='erro de consulta; veja a execução desse nó';\n  if(/\\b401\\b|unauthori[sz]ed|invalid.*credential|invalid.*token/i.test(raw))message='401: credencial inválida ou expirada; reconecte essa conta';\n  else if(/\\b403\\b|forbidden|permission/i.test(raw))message='403: acesso negado; confira permissões e APIs habilitadas';\n  else if(/\\b429\\b|rate.?limit|too many/i.test(raw))message='429: limite de consultas; tente novamente depois';\n  else if(/timeout|timed.?out|ETIMEDOUT/i.test(raw))message='tempo limite excedido';\n  else if(/ENOTFOUND|EAI_AGAIN|ECONNREFUSED|ECONNRESET/i.test(raw))message='falha de rede ou resolução DNS na EC2';\n  sourceStatus[name]='error';warnings.push(name+': '+message+'.');return null;\n }\n const valid=all.filter(x=>Object.keys(x).length);\n if(name==='Clima - Campinas' && !Number.isFinite(valid[0]?.current?.temperature_2m)){\n  sourceStatus[name]='error';warnings.push(name+': resposta sem temperatura; confira o retorno do serviço.');return null;\n }\n if(name==='CoinGecko - Cotações' && !['bitcoin','solana','ripple','usd-coin'].some(k=>Number.isFinite(valid[0]?.[k]?.brl))){\n  sourceStatus[name]='error';warnings.push(name+': resposta sem preços válidos.');return null;\n }\n sourceStatus[name]='ok';return valid;\n}\nfunction capped(lines,max=12){return lines.slice(0,max).join('\\n')+(lines.length>max?`\\n… e mais ${lines.length-max}.`:'');}\nconst eventRows=rows('Google Calendar - Semana');\nlet calendar='⚠️ Agenda indisponível.';\nif(eventRows) {\n const valid=eventRows.filter(e=>e.start && e.status!=='cancelled')\n  .filter(e=>{\n    const ok=e.start.dateTime ? Number.isFinite(new Date(e.start.dateTime).getTime()) : /^\\d{4}-\\d{2}-\\d{2}$/.test(e.start.date||'');\n    if(!ok)warnings.push('Agenda: evento com data inválida omitido.');return ok;\n  })\n  .filter(e=>!e.end?.dateTime || new Date(e.end.dateTime)>now)\n  .filter(e=>!e.end?.date || e.end.date>today)\n  .sort((a,b)=>new Date(a.start.dateTime||a.start.date).getTime()-new Date(b.start.dateTime||b.start.date).getTime());\n const render=e=>e.start.dateTime?`• ${shortDate(dateKey(e.start.dateTime))} ${clock(e.start.dateTime)} — ${clean(e.summary||'Sem título',140)}`:`• ${shortDate(e.start.date)} — ${clean(e.summary||'Sem título',140)} (dia inteiro)`;\n const key=e=>e.start.dateTime?dateKey(e.start.dateTime):e.start.date;\n const current=valid.filter(e=>key(e)<cfg.nextWeekStart);\n const next=valid.filter(e=>key(e)>=cfg.nextWeekStart && key(e)<cfg.endWindowDate);\n calendar=`*Restante desta semana — até ${shortDate(new Date(new Date(cfg.nextWeekStart+'T12:00:00Z').getTime()-86400000).toISOString())}*\\n`+(current.length?current.map(render).join('\\n'):'Nenhum compromisso restante nesta semana.')+'\\n\\n*Próxima semana*\\n'+(next.length?next.map(render).join('\\n'):'Nenhum compromisso na próxima semana.');\n}\nlet totalCurrent=0,totalNext=0,totalLate=0,successfulTaskLists=0;\nconst taskSections=[];\nfor(const [key,name,label] of [['rotina','Tasks - Minha Rotina','Minha Rotina'],['hackathon','Tasks - Hackathon GH','Hackathon GH'],['eracing','Tasks - E-Racing','E-Racing'],['profissional','Tasks - Profissional','Profissional']]) {\n const data=rows(name);\n if(!data || !cfg.listIds?.[key] || cfg.listIds[key]==='LISTA_NAO_ENCONTRADA'){ sourceStatus[name]='error'; taskSections.push(`*${label}*\\n⚠️ Consulta indisponível; confira a lista e a credencial.`); continue; }\n successfulTaskLists++;\n const active=data.filter(t=>t.title && t.status!=='completed' && !t.completed && !t.deleted && !t.hidden);\n const validDue=t=>/^\\d{4}-\\d{2}-\\d{2}/.test(t.due||'');\n const due=t=>String(t.due).slice(0,10);\n const late=active.filter(t=>validDue(t)&&due(t)<today).sort((a,b)=>due(a).localeCompare(due(b)));\n const order=(a,b)=>due(a).localeCompare(due(b)) || String(a.title).localeCompare(String(b.title),'pt-BR');\n const current=active.filter(t=>validDue(t)&&due(t)>=today&&due(t)<cfg.nextWeekStart).sort(order);\n const next=active.filter(t=>validDue(t)&&due(t)>=cfg.nextWeekStart&&due(t)<cfg.endWindowDate).sort(order);\n const noDue=active.filter(t=>!t.due);\n const future=active.filter(t=>validDue(t)&&due(t)>=cfg.endWindowDate);\n const invalid=active.filter(t=>t.due&&!validDue(t));\n if(invalid.length)warnings.push(`${label}: ${invalid.length} tarefa(s) com data inválida.`);\n totalCurrent+=current.length;totalNext+=next.length;totalLate+=late.length;\n let text=`*${label}*\\n`;\n if(late.length) text+='🔴 Atrasadas (mais antigas primeiro):\\n'+late.map(t=>`• ${shortDate(t.due)} — ${clean(t.title,160)}`).join('\\n')+'\\n';\n const renderTask=t=>`• ${due(t)===today?'HOJE':shortDate(t.due)} — ${clean(t.title,160)}`;\n text+='Esta semana:\\n'+(current.length?current.map(renderTask).join('\\n'):'Nenhuma tarefa restante nesta semana.');\n text+='\\nPróxima semana:\\n'+(next.length?next.map(renderTask).join('\\n'):'Nenhuma tarefa na próxima semana.');\n if(noDue.length)text+='\\nSem data:\\n'+noDue.map(t=>'• '+clean(t.title,160)).join('\\n');\n if(future.length)text+=`\\n${future.length} tarefa(s) após a próxima semana, fora deste período.`;\n taskSections.push(text);\n}\nconst objectiveRows=rows('Sheets - Objetivos Ativos');\nlet objectives='⚠️ Objetivos indisponíveis.';\nif(objectiveRows){const active=objectiveRows.filter(o=>o.objetivo&&!['concluido','concluida','feito','feita','completed','cancelado','cancelada','arquivado','arquivada'].includes(norm(o.status)));\n objectives=active.length?capped(active.map(o=>`• ${clean(o.objetivo,180)}${o.prazo?' — prazo: '+clean(o.prazo,30):''}`),8):'Nenhum objetivo ativo.';}\nconst weatherRows=rows('Clima - Campinas'),weather=weatherRows?.[0];\nlet weatherText='⚠️ Clima indisponível.';\nif(weather){\n const c=weather.current,d=weather.daily||{},idx=(d.time||[]).indexOf(today);\n const labels={0:'céu limpo',1:'predominantemente limpo',2:'parcialmente nublado',3:'nublado',45:'neblina',48:'neblina com geada',51:'garoa leve',53:'garoa',55:'garoa forte',56:'garoa congelante leve',57:'garoa congelante',61:'chuva leve',63:'chuva moderada',65:'chuva forte',66:'chuva congelante leve',67:'chuva congelante',71:'neve leve',73:'neve',75:'neve forte',77:'grãos de neve',80:'pancadas leves',81:'pancadas moderadas',82:'pancadas fortes',85:'pancadas de neve',86:'pancadas fortes de neve',95:'trovoadas',96:'trovoadas com granizo',99:'trovoadas com granizo forte'};\n const num=v=>Number.isFinite(v)?v.toFixed(1):'indisponível';\n weatherText=`${labels[c.weather_code]||'condição não descrita'} • ${num(c.temperature_2m)}°C`;\n if(Number.isFinite(c.apparent_temperature))weatherText+=` (sensação ${num(c.apparent_temperature)}°C)`;\n if(Number.isFinite(c.relative_humidity_2m))weatherText+=`\\nUmidade: ${c.relative_humidity_2m}%.`;\n if(idx>=0){\n  const min=d.temperature_2m_min?.[idx],max=d.temperature_2m_max?.[idx],pop=d.precipitation_probability_max?.[idx];\n  if(Number.isFinite(min)&&Number.isFinite(max))weatherText+=`\\nHoje: ${num(min)}–${num(max)}°C.`;\n  if(Number.isFinite(pop))weatherText+=` Chance máxima de chuva: ${Math.round(pop)}%.`;\n  if(pop>=40)weatherText+='\\n☂️ Considere levar guarda-chuva.';\n }\n weatherText+=`\\nFonte: Open-Meteo${c.time?' • atualização '+String(c.time).slice(11,16):''}.`;\n}\nconst prices=rows('CoinGecko - Cotações')?.[0];\nconst money=(v,cur)=>Number.isFinite(v)?v.toLocaleString('pt-BR',{style:'currency',currency:cur}):'indisponível';\nlet rates='⚠️ Cotações indisponíveis.';\nif(prices){const list=[['bitcoin','Bitcoin'],['solana','Solana'],['ripple','XRP'],['usd-coin','USDC']];\n rates=list.map(([key,label])=>{\n const p=prices[key];if(!p || !Number.isFinite(p.brl)){warnings.push(`Cotação ${label}: indisponível.`);return `• ${label}: indisponível.`;}\n const stamp=Number.isFinite(p.last_updated_at)?` (${clock(p.last_updated_at*1000)})`:'';\n if(p.last_updated_at && now.getTime()/1000-p.last_updated_at>3600)warnings.push(`Cotação ${label}: atualização há mais de uma hora.`);\n return `• ${label}: ${money(p.brl,'BRL')} | ${money(p.usd,'USD')}${stamp}`;\n }).join('\\n')+'\\nUSDC é um criptoativo; não é a cotação oficial do dólar.';}\nconst newsRows=rows('Notícias - Agência Brasil');\nlet newsText='⚠️ Notícias indisponíveis.';\nif(newsRows){\n const seen=new Set(),cutoff=now.getTime()-24*3600000;\n const articles=newsRows.filter(a=>a.title && /^https?:\\/\\//.test(a.link||a.url||''))\n  .map(a=>({...a,published:new Date(a.isoDate||a.pubDate||a.date||'').getTime(),url:a.link||a.url}))\n  .filter(a=>Number.isFinite(a.published)&&a.published>=cutoff&&a.published<=now.getTime()+5*60000)\n  .sort((a,b)=>b.published-a.published)\n  .filter(a=>!seen.has(a.url)&&(seen.add(a.url),true));\n newsText=articles.length?articles.slice(0,3).map((a,i)=>`${i+1}. ${clean(a.title,220)} — Agência Brasil\\n${a.url}`).join('\\n\\n'):'Nenhuma notícia das últimas 24 horas no feed da Agência Brasil.';\n}\nconst successfulSources=Object.values(sourceStatus).filter(s=>s==='ok').length;\nif(!successfulSources)throw new Error('Nenhuma fonte pôde ser consultada. O briefing não foi enviado para evitar informar dados falsos. '+warnings.join(' | '));\nconst taskSummary=successfulTaskLists ? `${totalLate} atrasada(s), ${totalCurrent} nesta semana e ${totalNext} na próxima${successfulTaskLists<4?` — contagem parcial (${successfulTaskLists}/4 listas)`:''}.` : 'Contagem de tarefas indisponível: nenhuma das quatro listas foi consultada com sucesso.';\n\nconst briefing=`🌅 *Bom dia, Cairê!* ${shortDate(today)} • ${clock(now)}\\n${taskSummary}\\n\\n📅 *AGENDA — ESTA SEMANA E PRÓXIMA*\\n${calendar}\\n\\n✅ *TAREFAS — POR VENCIMENTO*\\n${taskSections.join('\\n\\n')}\\n\\n🌤️ *PREVISÃO — CAMPINAS*\\n${weatherText}\\n\\n🎯 *OBJETIVOS ATIVOS*\\n${objectives}\\n\\n💰 *COTAÇÕES*\\n${rates}\\n\\n📰 *NOTÍCIAS — ÚLTIMAS 24H*\\n${newsText}${warnings.length?'\\n\\n⚠️ *AVISOS*\\n'+[...new Set(warnings)].map(w=>'• '+w).join('\\n'):''}`;\nreturn [{json:{briefing,recipient:cfg.recipient,warnings:[...new Set(warnings)],diagnostics:{version:'3.0.0',successfulSources,successfulTaskLists,sourceStatus}}}];\n"
+      },
+      "id": "9991a0c8-dd08-4f99-92db-63139623d11a",
+      "name": "Montar Briefing",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -2672,
+        48
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://evolution.example.com/message/sendText/segundo-cerebro",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "number",
+              "value": "={{ $json.number }}"
+            },
+            {
+              "name": "text",
+              "value": "={{ $json.text }}"
+            }
+          ]
+        },
+        "options": {
+          "batching": {
+            "batch": {
+              "batchSize": 1
+            }
+          },
+          "timeout": 20000
+        }
+      },
+      "id": "875684df-776a-4214-9214-298dd0f65357",
+      "name": "WhatsApp - Enviar Briefing",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -2240,
+        48
+      ]
+    },
+    {
+      "parameters": {},
+      "id": "981fe399-db42-4350-9138-e13a9e4d1bfe",
+      "name": "Teste manual",
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        -4416,
+        208
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "return [{json:{source:\"Google Calendar - Semana\",data:$input.all().map(i=>i.json)}}];"
+      },
+      "id": "452595af-544f-4114-bf46-77b2436ff010",
+      "name": "Preparar Fonte 1",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -3152,
+        -688
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "return [{json:{source:\"CoinGecko - Cotações\",data:$input.all().map(i=>i.json)}}];"
+      },
+      "id": "71985d1d-0d25-4a85-afe6-e0d2a875756e",
+      "name": "Preparar Fonte 2",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -3152,
+        -496
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "return [{json:{source:\"Clima - Campinas\",data:$input.all().map(i=>i.json)}}];"
+      },
+      "id": "a14695a8-fad5-4a9f-b24d-38cdc2b1f4ec",
+      "name": "Preparar Fonte 3",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -3152,
+        -320
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "return [{json:{source:\"Notícias - Agência Brasil\",data:$input.all().map(i=>i.json)}}];"
+      },
+      "id": "88dd9261-1cf7-4bc2-bfa3-e6a44e71a00a",
+      "name": "Preparar Fonte 4",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -3152,
+        -144
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "return [{json:{source:\"Sheets - Objetivos Ativos\",data:$input.all().map(i=>i.json)}}];"
+      },
+      "id": "ab3b8d92-0fc8-47a9-8b88-223c4799c126",
+      "name": "Preparar Fonte 5",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -3152,
+        48
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "return [{json:{source:\"Tasks - Minha Rotina\",data:$input.all().map(i=>i.json)}}];"
+      },
+      "id": "20803076-03b8-434c-84ca-b5c680d713a5",
+      "name": "Preparar Fonte 6",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -3152,
+        224
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "return [{json:{source:\"Tasks - Hackathon GH\",data:$input.all().map(i=>i.json)}}];"
+      },
+      "id": "3cf882c4-5eb3-4f7c-9bfe-41bffc2d7c9f",
+      "name": "Preparar Fonte 7",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -3152,
+        400
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "return [{json:{source:\"Tasks - E-Racing\",data:$input.all().map(i=>i.json)}}];"
+      },
+      "id": "e4eae5d3-a048-4be1-aaf8-c8252b397a44",
+      "name": "Preparar Fonte 8",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -3152,
+        592
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "return [{json:{source:\"Tasks - Profissional\",data:$input.all().map(i=>i.json)}}];"
+      },
+      "id": "391b1369-a935-4e9b-b7b1-2907115c44a5",
+      "name": "Preparar Fonte 9",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -3152,
+        768
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "return [{json:{source:'_contexto',data:[$input.first().json]}}];"
+      },
+      "id": "8d75c20c-adcf-435f-b50c-ed225e1711ad",
+      "name": "Contexto do Briefing",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -3152,
+        944
+      ]
+    },
+    {
+      "parameters": {
+        "url": "https://tasks.googleapis.com/tasks/v1/users/@me/lists",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "googleTasksOAuth2Api",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "maxResults",
+              "value": "1000"
+            }
+          ]
+        },
+        "options": {
+          "timeout": 15000
+        }
+      },
+      "id": "8c68334e-756e-479a-8c4c-b504aea973a2",
+      "name": "Google Tasks - Listas1",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -3936,
+        48
+      ],
+      "alwaysOutputData": true,
+      "retryOnFail": true,
+      "maxTries": 2,
+      "waitBetweenTries": 1500,
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "jsCode": "const now = $now.setZone('America/Sao_Paulo');\nconst cfg = {\n  timezone: 'America/Sao_Paulo', nowIso: now.toISO(), today: now.toISODate(),\n  startDay: now.startOf('day').toISO(),\n  weekStart: now.startOf('week').toISODate(), nextWeekStart: now.startOf('week').plus({weeks:1}).toISODate(),\n  endWindowDate: now.startOf('week').plus({weeks:2}).toISODate(),\n  endWindow: now.startOf('week').plus({weeks:2}).toISO(),\n  newsFrom: now.minus({hours:24}).toUTC().toISO(),\n  recipient: 'CONFIGURAR_NUMERO_WHATSAPP', city: 'Campinas,BR',\n  listNames: {rotina:'Minha Rotina', hackathon:'Grupo de estudos para Hackathon (GH)', eracing:'E-Racing', profissional:'Profissional'},\n  fallbackIds: {},\n};\nconst response = $input.first().json;\nconst norm = v => String(v || '').normalize('NFD').replace(/[\\u0300-\\u036f]/g,'').trim().toLowerCase();\nconst lists = Array.isArray(response.items) ? response.items : [];\nconst listIds={}, listWarnings=[];\nfor (const [key,title] of Object.entries(cfg.listNames)) {\n  const matches = lists.filter(l => norm(l.title) === norm(title));\n  if (matches.length===1) listIds[key]=matches[0].id;\n  else if ((response.error || !Array.isArray(response.items)) && cfg.fallbackIds[key]) {\n    listIds[key]=cfg.fallbackIds[key];\n    listWarnings.push(`Não foi possível descobrir listas; ${title} usa o ID do workflow principal.`);\n  } else {\n    listIds[key]='LISTA_NAO_ENCONTRADA';\n    listWarnings.push(matches.length>1 ? `Há listas duplicadas com nome ${title}; selecione o ID em Resolver Listas.` : `Lista não encontrada: ${title}.`);\n  }\n}\nif(response.nextPageToken) listWarnings.push('Há mais de 1000 listas; a descoberta de listas ficou incompleta.');\nreturn [{json:{...cfg,listIds,listWarnings}}];"
+      },
+      "id": "4c614b20-0a49-45fc-96ad-852ca8f6311c",
+      "name": "Resolver Listas1",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -3696,
+        48
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const input = $input.first().json;\nconst limit=3000, chunks=[];\nlet current='';\nfor(const line of input.briefing.split('\\n')) {\n  const points=Array.from(line);\n  do {\n    let part='';\n    while(points.length && part.length+points[0].length<=limit) part+=points.shift();\n    if(current && current.length+part.length+1>limit){ chunks.push(current);current=''; }\n    current+=(current?'\\n':'')+part;\n  } while(points.length);\n}\nif(current) chunks.push(current);\nreturn chunks.map((text,i)=>({json:{number:input.recipient,text:chunks.length>1?`[${i+1}/${chunks.length}]\\n${text}`:text}}));"
+      },
+      "id": "50f67901-272c-4c54-a136-3b00f7072020",
+      "name": "Dividir Mensagens1",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -2448,
+        48
+      ]
+    },
+    {
+      "parameters": {
+        "content": "## Brainiac — Briefing v3\n1. Importe em workflow NOVO e vazio.\n2. Google e WhatsApp mantêm as credenciais do JSON enviado.\n3. Clima: Open-Meteo; notícias: RSS Agência Brasil. Ambos sem chave.\n4. Execute pelo Teste manual; confira as fontes e o WhatsApp.\n5. Desative o briefing antigo. Publique/ative este workflow.\n\nCron diário: 0 0 8 * * * no fuso America/Sao_Paulo.\nO JSON vem inativo para não criar agendamento duplicado ao importar.\nImportar não ativa automaticamente o cron.\n\nSemanas: restante desta semana + próxima (segunda a domingo).\nTarefas: atrasadas, esta semana, próxima semana e sem data.\nNenhuma fonte utilizável: falha explícita, sem enviar briefing vazio.\nNão há recuperação de disparo perdido ou garantia de envio único por dia.\nReexecução manual pode reenviar mensagens já entregues.\nConfigurações gerais no início de Resolver Listas.",
+        "height": 560,
+        "width": 520
+      },
+      "id": "d74a853e-faba-4219-bf0c-9787731b9871",
+      "name": "LEIA ANTES DE ATIVAR1",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -4416,
+        -656
+      ]
+    }
+  ],
+  "connections": {
+    "Trigger 08h": {
+      "main": [
+        [
+          {
+            "node": "Google Tasks - Listas1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Teste manual": {
+      "main": [
+        [
+          {
+            "node": "Google Tasks - Listas1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Calendar - Semana": {
+      "main": [
+        [
+          {
+            "node": "Preparar Fonte 1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Preparar Fonte 1": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "CoinGecko - Cotações": {
+      "main": [
+        [
+          {
+            "node": "Preparar Fonte 2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Preparar Fonte 2": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Clima - Campinas": {
+      "main": [
+        [
+          {
+            "node": "Preparar Fonte 3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Preparar Fonte 3": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 2
+          }
+        ]
+      ]
+    },
+    "Notícias - Agência Brasil": {
+      "main": [
+        [
+          {
+            "node": "Preparar Fonte 4",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Preparar Fonte 4": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 3
+          }
+        ]
+      ]
+    },
+    "Sheets - Objetivos Ativos": {
+      "main": [
+        [
+          {
+            "node": "Preparar Fonte 5",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Preparar Fonte 5": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 4
+          }
+        ]
+      ]
+    },
+    "Tasks - Minha Rotina": {
+      "main": [
+        [
+          {
+            "node": "Preparar Fonte 6",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Preparar Fonte 6": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 5
+          }
+        ]
+      ]
+    },
+    "Tasks - Hackathon GH": {
+      "main": [
+        [
+          {
+            "node": "Preparar Fonte 7",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Preparar Fonte 7": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 6
+          }
+        ]
+      ]
+    },
+    "Tasks - E-Racing": {
+      "main": [
+        [
+          {
+            "node": "Preparar Fonte 8",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Preparar Fonte 8": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 7
+          }
+        ]
+      ]
+    },
+    "Tasks - Profissional": {
+      "main": [
+        [
+          {
+            "node": "Preparar Fonte 9",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Preparar Fonte 9": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 8
+          }
+        ]
+      ]
+    },
+    "Contexto do Briefing": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 9
+          }
+        ]
+      ]
+    },
+    "Merge": {
+      "main": [
+        [
+          {
+            "node": "Montar Briefing",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Montar Briefing": {
+      "main": [
+        [
+          {
+            "node": "Dividir Mensagens1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Tasks - Listas1": {
+      "main": [
+        [
+          {
+            "node": "Resolver Listas1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Resolver Listas1": {
+      "main": [
+        [
+          {
+            "node": "Google Calendar - Semana",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "CoinGecko - Cotações",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Clima - Campinas",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Notícias - Agência Brasil",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Sheets - Objetivos Ativos",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Tasks - Minha Rotina",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Tasks - Hackathon GH",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Tasks - E-Racing",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Tasks - Profissional",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Contexto do Briefing",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Dividir Mensagens1": {
+      "main": [
+        [
+          {
+            "node": "WhatsApp - Enviar Briefing",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false,
+    "timezone": "America/Sao_Paulo"
+  },
+  "nodeGroups": [],
+  "pinData": {}
+}
